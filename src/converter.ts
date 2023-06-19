@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import type { Block, Transaction, Token } from './blockchain.js';
+import type { Block, Transaction } from './types.js';
 import crypto from 'crypto';
 
 type PredictableBlockString =
@@ -10,7 +10,8 @@ type PredictableBlockString =
 export class Converter {
   public static Block = class AnonBlock {
     static transactionsToString(t: Transaction[]) {
-      const tToString = (t: Transaction) => `v=${t.vendor}&r=${t.recipient}&token.id=${t.token.id}&id=${t.id}`;
+      const tToString = (t: Transaction) =>
+        `v=${t.vendor}&r=${t.recipient}&token.id=${t.token.id}&id=${t.id}`;
       return t.map(tToString).join('|');
     }
     static buildTransactionListFromString(str: string) {
@@ -19,12 +20,12 @@ export class Converter {
       for (const tStr of tAsStrList) {
         const kvs = tStr.split('&');
         let transaction = {
-          recipient: kvs.find(s => s.startsWith('r='))!.split('r=')[1],
-          vendor: kvs.find(s => s.startsWith('v='))!.split('v=')[1],
-          token: { id: kvs.find(s => s.startsWith('token.id='))!.split('token.id=')[1] },
-          id: kvs.find(s => s.startsWith('id='))!.split('id=')[1]
+          recipient: kvs.find((s) => s.startsWith('r='))!.split('r=')[1],
+          vendor: kvs.find((s) => s.startsWith('v='))!.split('v=')[1],
+          token: { id: kvs.find((s) => s.startsWith('token.id='))!.split('token.id=')[1] },
+          id: kvs.find((s) => s.startsWith('id='))!.split('id=')[1],
         };
-        transactions.push(transaction)
+        transactions.push(transaction);
       }
       return transactions;
     }
@@ -49,7 +50,8 @@ export class Converter {
       const transactionsAsStr = blockAsArray
         .find((str) => str.includes('transactions='))!
         .split('transactions=')[1];
-      const transactions: Transaction[] = AnonBlock.buildTransactionListFromString(transactionsAsStr);
+      const transactions: Transaction[] =
+        AnonBlock.buildTransactionListFromString(transactionsAsStr);
       return {
         index,
         previousHashedBlock,
@@ -65,10 +67,10 @@ export class Converter {
     private decipher: crypto.Decipher;
     private algorithm = process.env.HASHER_ENCR_ALG!;
     constructor(sKey: crypto.CipherKey, iv: crypto.BinaryLike) {
-        this.initVector = iv;
-        this.securityKey = sKey;
-        this.cipher = crypto.createCipheriv(this.algorithm, this.securityKey, this.initVector);
-        this.decipher = crypto.createDecipheriv(this.algorithm, this.securityKey, this.initVector);
+      this.initVector = iv;
+      this.securityKey = sKey;
+      this.cipher = crypto.createCipheriv(this.algorithm, this.securityKey, this.initVector);
+      this.decipher = crypto.createDecipheriv(this.algorithm, this.securityKey, this.initVector);
     }
     encrypt(str: string) {
       let encryptedData = this.cipher.update(str, 'utf-8', 'hex');

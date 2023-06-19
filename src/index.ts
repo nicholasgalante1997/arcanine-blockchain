@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
-dotenv.config();
 import { server } from './server.js';
-const port = (process.env.NODE_PORT || 5009);
-server.listen(port, () => console.log('listening on port 5009...'))
+import { logger } from './logger.js';
+
+dotenv.config();
+const port = process.env.PORT || 5009;
+server.listen(port, () => logger.info(`listening on port ${port}...`));
